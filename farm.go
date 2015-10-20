@@ -1,6 +1,8 @@
 package main
 
 import "fmt"
+import "encoding/json"
+import "io/ioutil"
 
 type Species int
 
@@ -22,22 +24,27 @@ var SpeciesNames = [6]string {
   "Sheep",
 }
 
+// serialize enum values
+func (species Species) MarshalJSON() ([]byte, error) {
+  return json.Marshal(SpeciesNames[species])
+}
+
 type Animal struct {
-  species Species
-  name string
-  age uint
+  Species Species
+  Name string
+  Age uint
 }
 
 type Farm struct {
-  animals []Animal
+  Name string
+  Animals []Animal
 }
 
-func main() {
-  // a := Animal{species: Cow, name: "Honey", age: 5}
-  farm := new(Farm)
-  // farm.animals = append(farm.animals, a)
-  // ani := farm.animals[0]
-
+func readData() Farm {
+  fmt.Print("What is your farm's name: ")
+  var farmName string
+  fmt.Scan(&farmName)
+  farm := Farm{Name: farmName}
   shouldContinue := "y"
   for shouldContinue == "y" {
     // name
@@ -52,16 +59,31 @@ func main() {
     fmt.Print("Animal's age: ")
     var newAge int
     fmt.Scanf("%d", &newAge)
-    newAnimal := Animal{name: newName, species: newSpecies, age: uint(newAge)}
-    farm.animals = append(farm.animals, newAnimal)
+    newAnimal := Animal{Name: newName, Species: newSpecies, Age: uint(newAge)}
+    farm.Animals = append(farm.Animals, newAnimal)
     // continue
     fmt.Print("Type 'y' to continue, anything else to exit: ")
     fmt.Scan(&shouldContinue)
   }
-  for _, animal := range farm.animals {
-    fmt.Println("Next Animal")
-    fmt.Println(animal.name)
-    fmt.Println(animal.age)
-    fmt.Println(SpeciesNames[animal.species])
+  return farm
+}
+
+func serializeData(farm Farm) {
+  farmBytes, serializeError := json.Marshal(farm)
+  fmt.Println(string(farmBytes))
+  if serializeError != nil {
+    panic(serializeError)
   }
+  writeError := ioutil.WriteFile("farm.json", farmBytes, 0644)
+  if writeError != nil {
+    panic(writeError)
+  }
+  fmt.Println("Farm data saved successfully to farm.json")
+}
+
+func main() {
+  fmt.Println("Welcome to place sunlight never reaches...")
+  farm := readData()
+  fmt.Println("Farm:", farm.Name)
+  serializeData(farm)
 }
