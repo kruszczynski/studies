@@ -4,18 +4,18 @@ import "fmt"
 import "encoding/json"
 import "io/ioutil"
 
-type Species int
+type species int
 
 const (
-  Cow Species = iota
-  Pig
-  Cock
-  Tit
-  Deer
-  Sheep
+  cow species = iota
+  pig
+  cock
+  tit
+  deer
+  sheep
 )
 
-var SpeciesNames = [6]string {
+var speciesNames = [6]string {
   "Cow",
   "Pig",
   "Cock",
@@ -24,23 +24,25 @@ var SpeciesNames = [6]string {
   "Sheep",
 }
 
-// serialize enum values
-func (species Species) MarshalJSON() ([]byte, error) {
-  return json.Marshal(SpeciesNames[species])
+// MarshalJSON intr
+func (species species) MarshalJSON() ([]byte, error) {
+  return json.Marshal(speciesNames[species])
 }
 
+// Animal is a representation of an animal
 type Animal struct {
-  Species Species
+  Species species
   Name string
   Age uint
 }
 
+// Farm is a representation of a Farm that has animals
 type Farm struct {
   Name string
   Animals []Animal
 }
 
-func readData() Farm {
+func readFarm() Farm {
   fmt.Print("What is your farm's name: ")
   var farmName string
   fmt.Scan(&farmName)
@@ -53,7 +55,7 @@ func readData() Farm {
     fmt.Scan(&newName)
     // species
     fmt.Print("Animal's species (0=Cow,1=Pig,2=Cock,3=Tit,4=Deer,5=Sheep): ")
-    var newSpecies Species
+    var newSpecies species
     fmt.Scanf("%d", &newSpecies)
     // age
     fmt.Print("Animal's age: ")
@@ -68,22 +70,20 @@ func readData() Farm {
   return farm
 }
 
-func serializeData(farm Farm) {
-  farmBytes, serializeError := json.Marshal(farm)
-  fmt.Println(string(farmBytes))
-  if serializeError != nil {
-    panic(serializeError)
+func serializeFarm(farm Farm) {
+  farmBytes, err := json.Marshal(farm)
+  if err != nil {
+    panic(err)
   }
-  writeError := ioutil.WriteFile("farm.json", farmBytes, 0644)
-  if writeError != nil {
-    panic(writeError)
+  err = ioutil.WriteFile("farm.json", farmBytes, 0644)
+  if err != nil {
+    panic(err)
   }
   fmt.Println("Farm data saved successfully to farm.json")
 }
 
 func main() {
   fmt.Println("Welcome to place sunlight never reaches...")
-  farm := readData()
-  fmt.Println("Farm:", farm.Name)
-  serializeData(farm)
+  farm := readFarm()
+  serializeFarm(farm)
 }
