@@ -2,7 +2,8 @@ package main
 
 import "fmt"
 import "encoding/json"
-import "io/ioutil"
+// import "io/ioutil"
+import "os"
 
 type species int
 
@@ -14,6 +15,8 @@ const (
   deer
   sheep
 )
+
+const fileName string = "farm.json"
 
 var speciesNames = [6]string {
   "Cow",
@@ -42,11 +45,11 @@ type Farm struct {
   Animals []Animal
 }
 
-func readFarm() Farm {
+func readFarm() *Farm {
   fmt.Print("What is your farm's name: ")
   var farmName string
   fmt.Scan(&farmName)
-  farm := Farm{Name: farmName}
+  farm := &Farm{Name: farmName}
   shouldContinue := "y"
   for shouldContinue == "y" {
     // name
@@ -57,6 +60,7 @@ func readFarm() Farm {
     fmt.Print("Animal's species (0=Cow,1=Pig,2=Cock,3=Tit,4=Deer,5=Sheep): ")
     var newSpecies species
     fmt.Scanf("%d", &newSpecies)
+    newSpecies = newSpecies % 6
     // age
     fmt.Print("Animal's age: ")
     var newAge int
@@ -70,20 +74,23 @@ func readFarm() Farm {
   return farm
 }
 
-func serializeFarm(farm Farm) {
-  farmBytes, err := json.Marshal(farm)
+func serializeFarm(farm *Farm) error {
+  file, err := os.Create(fileName)
   if err != nil {
-    panic(err)
+    return(err)
   }
-  err = ioutil.WriteFile("farm.json", farmBytes, 0644)
-  if err != nil {
-    panic(err)
+  encoder := json.NewEncoder(file)
+  if err := encoder.Encode(farm); err != nil {
+    return(err)
   }
-  fmt.Println("Farm data saved successfully to farm.json")
+  fmt.Println("Farm data saved successfully to", fileName)
+  return(nil)
 }
 
 func main() {
   fmt.Println("Welcome to place sunlight never reaches...")
   farm := readFarm()
-  serializeFarm(farm)
+  if err := serializeFarm(farm); err != nil {
+    panic(err)
+  }
 }
