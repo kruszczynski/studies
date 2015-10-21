@@ -2,7 +2,6 @@ package main
 
 import "fmt"
 import "encoding/json"
-// import "io/ioutil"
 import "os"
 
 type species int
@@ -22,7 +21,7 @@ var speciesNames = [6]string {
   "Cow",
   "Pig",
   "Cock",
-  "Tit",
+  "Tit",w
   "Deer",
   "Sheep",
 }
@@ -53,20 +52,17 @@ func readFarm() *Farm {
   shouldContinue := "y"
   for shouldContinue == "y" {
     // name
+    animal := &Animal{}
     fmt.Print("Animal's name: ")
-    var newName string
-    fmt.Scan(&newName)
+    fmt.Scan(&animal.name)
     // species
     fmt.Print("Animal's species (0=Cow,1=Pig,2=Cock,3=Tit,4=Deer,5=Sheep): ")
-    var newSpecies species
-    fmt.Scanf("%d", &newSpecies)
-    newSpecies = newSpecies % 6
+    fmt.Scanf("%d", &animal.species)
+    animal.species = animal.species % len(speciesNames)
     // age
     fmt.Print("Animal's age: ")
-    var newAge int
-    fmt.Scanf("%d", &newAge)
-    newAnimal := Animal{Name: newName, Species: newSpecies, Age: uint(newAge)}
-    farm.Animals = append(farm.Animals, newAnimal)
+    fmt.Scanf("%d", &animal.age)
+    farm.Animals = append(farm.Animals, animal)
     // continue
     fmt.Print("Type 'y' to continue, anything else to exit: ")
     fmt.Scan(&shouldContinue)
@@ -76,21 +72,21 @@ func readFarm() *Farm {
 
 func serializeFarm(farm *Farm) error {
   file, err := os.Create(fileName)
+  defer file.Close()
   if err != nil {
-    return(err)
+    return err
   }
   encoder := json.NewEncoder(file)
   if err := encoder.Encode(farm); err != nil {
-    return(err)
+    return err
   }
   fmt.Println("Farm data saved successfully to", fileName)
-  return(nil)
+  return nil
 }
 
 func main() {
   fmt.Println("Welcome to place sunlight never reaches...")
-  farm := readFarm()
-  if err := serializeFarm(farm); err != nil {
+  if err := serializeFarm(readFarm()); err != nil {
     panic(err)
   }
 }
