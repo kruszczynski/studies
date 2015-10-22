@@ -32,7 +32,7 @@ func (species species) MarshalJSON() ([]byte, error) {
 }
 
 // Animal is a representation of an animal
-type Animal struct {
+type animal struct {
 	Species species
 	Name    string
 	Age     uint
@@ -41,7 +41,7 @@ type Animal struct {
 // Farm is a representation of a Farm that has animals
 type Farm struct {
 	Name    string
-	Animals []Animal
+	Animals []*animal
 }
 
 func readFarm() *Farm {
@@ -49,19 +49,18 @@ func readFarm() *Farm {
 	var farmName string
 	fmt.Scan(&farmName)
 	farm := &Farm{Name: farmName}
-	shouldContinue := "y"
-	for shouldContinue == "y" {
+	for shouldContinue := "y"; shouldContinue == "y"; {
 		// name
-		animal := &Animal{}
+		animal := &animal{}
 		fmt.Print("Animal's name: ")
-		fmt.Scan(&animal.name)
+		fmt.Scan(&animal.Name)
 		// species
 		fmt.Print("Animal's species (0=Cow,1=Pig,2=Cock,3=Tit,4=Deer,5=Sheep): ")
-		fmt.Scanf("%d", &animal.species)
-		animal.species = animal.species % len(speciesNames)
+		fmt.Scanf("%d", &animal.Species)
+		animal.Species = animal.Species % species(len(speciesNames))
 		// age
 		fmt.Print("Animal's age: ")
-		fmt.Scanf("%d", &animal.age)
+		fmt.Scanf("%d", &animal.Age)
 		farm.Animals = append(farm.Animals, animal)
 		// continue
 		fmt.Print("Type 'y' to continue, anything else to exit: ")
@@ -72,10 +71,10 @@ func readFarm() *Farm {
 
 func serializeFarm(farm *Farm) error {
 	file, err := os.Create(fileName)
-	defer file.Close()
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 	encoder := json.NewEncoder(file)
 	if err := encoder.Encode(farm); err != nil {
 		return err
