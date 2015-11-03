@@ -1,8 +1,11 @@
 package main
 
-import "fmt"
-import "encoding/json"
-import "os"
+import (
+	"fmt"
+	"encoding/json"
+	"os"
+	"net/http"
+)
 
 type species int
 
@@ -38,17 +41,8 @@ type animal struct {
 	Age     uint
 }
 
-// Farm is a representation of a Farm that has animals
-type Farm struct {
-	Name    string
-	Animals []*animal
-}
-
-func readFarm() *Farm {
-	fmt.Print("What is your farm's name: ")
-	var farmName string
-	fmt.Scan(&farmName)
-	farm := &Farm{Name: farmName}
+func readFarm() []*animal {
+	animals := []*animal{}
 	for shouldContinue := "y"; shouldContinue == "y"; {
 		// name
 		animal := &animal{}
@@ -61,22 +55,22 @@ func readFarm() *Farm {
 		// age
 		fmt.Print("Animal's age: ")
 		fmt.Scanf("%d", &animal.Age)
-		farm.Animals = append(farm.Animals, animal)
+		animals = append(animals, animal)
 		// continue
 		fmt.Print("Type 'y' to continue, anything else to exit: ")
 		fmt.Scan(&shouldContinue)
 	}
-	return farm
+	return animals
 }
 
-func serializeFarm(farm *Farm) error {
+func serializeFarm(animals []*animal) error {
 	file, err := os.Create(fileName)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 	encoder := json.NewEncoder(file)
-	if err := encoder.Encode(farm); err != nil {
+	if err := encoder.Encode(animals); err != nil {
 		return err
 	}
 	fmt.Println("Farm data saved successfully to", fileName)
@@ -84,8 +78,13 @@ func serializeFarm(farm *Farm) error {
 }
 
 func main() {
-	fmt.Println("Welcome to place sunlight never reaches...")
 	if err := serializeFarm(readFarm()); err != nil {
 		panic(err)
 	}
+  // http.HandleFunc("/", handler)
+  // http.ListenAndServe(":8080", nil)
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 }
