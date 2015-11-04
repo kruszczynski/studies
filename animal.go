@@ -1,6 +1,9 @@
 package main
 
-import "encoding/json"
+import (
+  "encoding/json"
+  "fmt"
+)
 
 type species int
 
@@ -27,14 +30,19 @@ func (s species) MarshalJSON() ([]byte, error) {
   return json.Marshal(speciesNames[s])
 }
 
-func (s species) UnmarshalJSON(byte []byte) error {
-  for index, name := range speciesNames {
-    trimmedInput := string(byte[1:len(byte)-1])
-    if name == trimmedInput {
-      s = species(index)
+func (s species) UnmarshalJSON(data []byte) error {
+  var entry string
+  if err := json.Unmarshal(data, &entry); err != nil {
+    return err
+  }
+  for i, name := range speciesNames {
+    if name == entry {
+      // for whatever reason that does not persist
+      s = species(i)
+      return nil
     }
   }
-  return nil
+  return fmt.Errorf("no such animal: %q", entry)
 }
 
 // Animal is a representation of an animal
