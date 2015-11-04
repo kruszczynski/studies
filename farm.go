@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"io"
-	"io/ioutil"
-	"fmt"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -17,19 +15,14 @@ func serializeAnimals(writer io.Writer) error {
 }
 
 // GetAnimals renders animals list
-func getAnimals(w http.ResponseWriter, _r *http.Request, _ httprouter.Params) {
+func getAnimals(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	serializeAnimals(w)
 }
 
 func createAnimal(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	animal := &animal{}
-	// animal.Name = r.FormValue("name")
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Print(string(body))
-	json.Unmarshal(body, &animal)
+	json.NewDecoder(r.Body).Decode(&animal)
+	defer r.Body.Close()
 	animals = append(animals, animal)
 }
 

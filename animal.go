@@ -42,7 +42,7 @@ func (s species) UnmarshalJSON(data []byte) error {
       return nil
     }
   }
-  return fmt.Errorf("no such animal: %q", entry)
+  return fmt.Errorf("no such animal: %s", entry)
 }
 
 // Animal is a representation of an animal
