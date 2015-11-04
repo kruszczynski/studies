@@ -13,11 +13,7 @@ import (
 var animals = []*animal{}
 
 func serializeAnimals(writer io.Writer) error {
-	encoder := json.NewEncoder(writer)
-	if err := encoder.Encode(animals); err != nil {
-		return err
-	}
-	return nil
+	return json.NewEncoder(writer).Encode(animals)
 }
 
 // GetAnimals renders animals list
