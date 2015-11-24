@@ -7,6 +7,13 @@ import (
 
 type species int
 
+// Animal is a representation of an animal
+type animal struct {
+  Species species
+  Name    string
+  Age     uint
+}
+
 const (
   cow species = iota
   pig
@@ -30,6 +37,15 @@ func (s species) MarshalJSON() ([]byte, error) {
   return json.Marshal(speciesNames[s])
 }
 
+func (a *animal) UnmarshalJSON(data []byte) error {
+  tempAnimal := &animal{}
+  if err := json.Unmarshal(data, &tempAnimal); err != nil {
+      return err
+  }
+  fmt.Print(tempAnimal)
+  return nil
+}
+
 func (s species) UnmarshalJSON(data []byte) error {
   var entry string
   if err := json.Unmarshal(data, &entry); err != nil {
@@ -45,9 +61,3 @@ func (s species) UnmarshalJSON(data []byte) error {
   return fmt.Errorf("no such animal: %s", entry)
 }
 
-// Animal is a representation of an animal
-type animal struct {
-  Species species
-  Name    string
-  Age     uint
-}
