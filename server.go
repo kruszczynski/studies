@@ -1,10 +1,10 @@
 package main
 
 import (
-	"./stats"
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/kruszczynski/studies/stats"
 	"math/rand"
 	"net"
 	"strings"
