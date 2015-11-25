@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./stats"
 	"bufio"
 	"errors"
 	"fmt"
@@ -15,7 +16,7 @@ const (
 	rock command = iota
 	paper
 	scissors
-	stats
+	getStats
 )
 
 var commandNames = [4]string{
@@ -35,23 +36,18 @@ func server() {
 		fmt.Println(err)
 		return
 	}
-	wins := make(chan int)
-	losses := make(chan int)
-	draws := make(chan int)
-	go statAgregator(wins)
-	go statAgregator(losses)
-	go statAgregator(draws)
+	collector := stats.NewCollector()
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
-		go handleServerConnection(conn, wins, losses, draws)
+		go handleServerConnection(conn, collector)
 	}
 }
 
-func handleServerConnection(conn net.Conn, wins chan int, losses chan int, draws chan int) {
+func handleServerConnection(conn net.Conn, collector *stats.Collector) {
 	// greet the player
 	conn.Write([]byte("Welcome stranger\n"))
 	// receive the message
@@ -72,26 +68,24 @@ func handleServerConnection(conn net.Conn, wins chan int, losses chan int, draws
 			response := command(rand.Intn(3))
 			responseString := commandNames[int(response)]
 			switch {
+			// DRAW
 			case usedCommand == response:
 				responseString = "DRAW " + responseString
-				draws <- 1
+				collector.DrawsCounter.Channel <- 1
+			// USER LOSES
 			case (usedCommand == 0 && response == 1) ||
 				(usedCommand == 1 && response == 2) ||
 				(usedCommand == 2 && response == 0):
 				responseString = "LOSE " + responseString
-				losses <- 1
+				collector.LossesCounter.Channel <- 1
+			// USER WINS, THE DEFAULT
 			default:
 				responseString = "WIN " + responseString
-				wins <- 1
+				collector.WinsCounter.Channel <- 1
 			}
 			conn.Write([]byte(responseString + "\n"))
 		} else {
-			winsTotal := <-wins
-			// lossesTotal := <-losses
-			// drawsTotal := <-draws
-			// response := fmt.Sprintf("W%d L%d D%d", winsTotal, lossesTotal, drawsTotal)
-			fmt.Println(winsTotal)
-			// conn.Write([]byte(response + "\n"))
+			conn.Write([]byte(collector.PrintStats() + "\n"))
 		}
 
 	}
@@ -100,7 +94,7 @@ func handleServerConnection(conn net.Conn, wins chan int, losses chan int, draws
 func extractCommand(reader *bufio.Reader) (command, error) {
 	line, err := reader.ReadBytes('\n')
 	if err != nil {
-		return stats, err
+		return getStats, err
 	}
 	lineString := strings.Trim(string(line), "\n\r\t")
 
@@ -109,13 +103,5 @@ func extractCommand(reader *bufio.Reader) (command, error) {
 			return command(index), nil
 		}
 	}
-	return stats, errors.New("INV")
-}
-
-func statAgregator(channel chan int) {
-	counter := 0
-	for {
-		increment := <-channel
-		counter = counter + increment
-	}
+	return getStats, errors.New("INV")
 }
