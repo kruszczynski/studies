@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net"
 	"net/textproto"
+	"sync/atomic"
 
 	"github.com/kruszczynski/studies/stats"
 )
@@ -97,17 +98,17 @@ func handleCommand(usedCommand command, conn net.Conn, collector *stats.Collecto
 		// DRAW
 		case usedCommand == response:
 			responseString = "DRAW " + responseString
-			collector.DrawsCounter.Channel <- 1
+			atomic.AddInt32(&collector.DrawsCount, 1)
 		// USER LOSES
 		case (usedCommand == 0 && response == 1) ||
 			(usedCommand == 1 && response == 2) ||
 			(usedCommand == 2 && response == 0):
 			responseString = "LOSE " + responseString
-			collector.LossesCounter.Channel <- 1
+			atomic.AddInt32(&collector.LossesCount, 1)
 		// USER WINS, THE DEFAULT
 		default:
 			responseString = "WIN " + responseString
-			collector.WinsCounter.Channel <- 1
+			atomic.AddInt32(&collector.WinsCount, 1)
 		}
 		conn.Write([]byte(responseString + "\n"))
 	} else if usedCommand == getStats {

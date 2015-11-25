@@ -4,17 +4,17 @@ import "fmt"
 
 // Collector collects and stores stats of RPSP game
 type Collector struct {
-	WinsCounter   *Counter
-	LossesCounter *Counter
-	DrawsCounter  *Counter
+	WinsCount   int32
+	LossesCount int32
+	DrawsCount  int32
 }
 
 // NewCollector returns new collector
 func NewCollector() *Collector {
 	collector := &Collector{
-		WinsCounter:   NewCounter(),
-		LossesCounter: NewCounter(),
-		DrawsCounter:  NewCounter(),
+		WinsCount:   0,
+		LossesCount: 0,
+		DrawsCount:  0,
 	}
 	return collector
 }
@@ -22,7 +22,7 @@ func NewCollector() *Collector {
 // PrintStats prints a nice string representation of stats
 func (c *Collector) PrintStats() string {
 	return fmt.Sprintf("W%d L%d D%d",
-		c.WinsCounter.Count,
-		c.LossesCounter.Count,
-		c.DrawsCounter.Count)
+		c.WinsCount,
+		c.LossesCount,
+		c.DrawsCount)
 }
