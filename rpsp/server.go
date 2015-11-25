@@ -35,17 +35,23 @@ func server() {
 		fmt.Println(err)
 		return
 	}
+	wins := make(chan int)
+	losses := make(chan int)
+	draws := make(chan int)
+	go statAgregator(wins)
+	go statAgregator(losses)
+	go statAgregator(draws)
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
-		go handleServerConnection(conn)
+		go handleServerConnection(conn, wins, losses, draws)
 	}
 }
 
-func handleServerConnection(conn net.Conn) {
+func handleServerConnection(conn net.Conn, wins chan int, losses chan int, draws chan int) {
 	// greet the player
 	conn.Write([]byte("Welcome stranger\n"))
 	// receive the message
@@ -68,16 +74,24 @@ func handleServerConnection(conn net.Conn) {
 			switch {
 			case usedCommand == response:
 				responseString = "DRAW " + responseString
+				draws <- 1
 			case (usedCommand == 0 && response == 1) ||
 				(usedCommand == 1 && response == 2) ||
 				(usedCommand == 2 && response == 0):
 				responseString = "LOSE " + responseString
+				losses <- 1
 			default:
 				responseString = "WIN " + responseString
+				wins <- 1
 			}
 			conn.Write([]byte(responseString + "\n"))
 		} else {
-			// Let's stat
+			winsTotal := <-wins
+			// lossesTotal := <-losses
+			// drawsTotal := <-draws
+			// response := fmt.Sprintf("W%d L%d D%d", winsTotal, lossesTotal, drawsTotal)
+			fmt.Println(winsTotal)
+			// conn.Write([]byte(response + "\n"))
 		}
 
 	}
@@ -96,4 +110,12 @@ func extractCommand(reader *bufio.Reader) (command, error) {
 		}
 	}
 	return stats, errors.New("INV")
+}
+
+func statAgregator(channel chan int) {
+	counter := 0
+	for {
+		increment := <-channel
+		counter = counter + increment
+	}
 }
