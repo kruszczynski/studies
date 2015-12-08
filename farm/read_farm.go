@@ -1,12 +1,16 @@
 package farm
 
-import "fmt"
+import (
+	"fmt"
 
-func readFarm() []*animal {
-	animals := []*animal{}
+	"github.com/kruszczynski/studies/animal"
+)
+
+func readFarm() []*animal.Animal {
+	animals := []*animal.Animal{}
 	for shouldContinue := "y"; shouldContinue == "y"; {
 		// Name
-		animal := &animal{}
+		animal := &animal.Animal{}
 		fmt.Print("Animal's name: ")
 		fmt.Scan(&animal.Name)
 		// species
