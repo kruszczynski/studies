@@ -21,14 +21,14 @@ func NewWriter(proxy io.Writer) *Writer {
 	return &Writer{h, proxy}
 }
 
-func (cw *Writer) Write(p []byte) (n int, err error) {
-	cw.Hash.Write(p)
-	return cw.proxy.Write(p)
+func (w *Writer) Write(p []byte) (n int, err error) {
+	w.Hash.Write(p)
+	return w.proxy.Write(p)
 }
 
 // PipeSum writes checksum of current hash to provided Writer
-func (cw *Writer) PipeSum(w io.Writer) {
-	buf := bufio.NewWriter(w)
-	fmt.Fprintf(buf, "% x", cw.Hash.Sum(nil))
+func (w *Writer) PipeSum(dest io.Writer) {
+	buf := bufio.NewWriter(dest)
+	fmt.Fprintf(buf, "% x", w.Hash.Sum(nil))
 	buf.Flush()
 }

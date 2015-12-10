@@ -29,11 +29,9 @@ var speciesNames = [6]string{
 // UnmarshalJSON Deserializes to Species from string
 func (s Species) UnmarshalJSON(data []byte) error {
 	var entry string
-	fmt.Println(entry)
 	if err := json.Unmarshal(data, &entry); err != nil {
 		return err
 	}
-	fmt.Println(entry)
 	for i, name := range speciesNames {
 		if name == entry {
 			// for whatever reason that does not persist
